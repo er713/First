@@ -1,6 +1,6 @@
 from itertools import product, cycle
 from random import randrange
-from math import floor
+from math import floor, log
 
 
 def main():
@@ -30,21 +30,24 @@ def main():
 
     def daje_ns_od_tj(j, atoms1, ns1):
         tj = j*deltat
-        # print(R, P, tj)
+        # print(R, P, tj, len(atoms1))
         for i in range(len(atoms1)):
             xatoms = floor(states[atoms1[i]][0] + tj*states[atoms1[i]][2])
             yatoms = floor(states[atoms1[i]][1] + tj*states[atoms1[i]][3])
             ns1[atoms1[i]] = ns1[atoms1[i]] - 1
+            # print(xatoms, yatoms, i)
             while xatoms >= R or xatoms < -R:
+                # print(xatoms)
                 if xatoms >= R:
-                    xatoms = 2*R-xatoms # odbicie od ściany
+                    xatoms = 2*R-xatoms - 1 # odbicie od ściany
                     atoms1[i] -= (2 * P + 1) * (2 * abs(states[atoms1[i]][2])) # mnożenie wektora razy -1
                 elif xatoms < -R:
                     xatoms = -xatoms-2*R # odbicie od ściany
                     atoms1[i] += (2 * P + 1) * (2 * abs(states[atoms1[i]][2])) # mnożenie wektora razy -1
             while yatoms >= R or yatoms < -R:
+                # print(yatoms)
                 if yatoms >= R:
-                    yatoms = 2*R-yatoms # odbicie od ściany
+                    yatoms = 2*R-yatoms - 1 # odbicie od ściany
                     atoms1[i] -= 2*abs(states[atoms1[i]][3]) # mnożenie wektora razy -1
                 elif yatoms < -R:
                     yatoms = -yatoms-2*R # odbicie od ściany
@@ -52,16 +55,30 @@ def main():
 
             atoms1[i] += (xatoms - states[atoms1[i]][0])*border + (yatoms - states[atoms1[i]][1])*step # zamiana miejsca atomu w tuple
             ns1[atoms1[i]] = ns1[atoms1[i]] + 1
-            return ns1
+        return ns1
+
+    def silnia(k):
+        if k == 0:
+            return 1
+        else:
+            return k*silnia(k-1)
+
+    def prawdopodobienstwo(N1, ns1):
+        praw = silnia(N1)
+        for i in ns1:
+            praw /= silnia(i)
+        return int(praw)
 
     maxj = int(input())
     for i in range(maxj):
-        patoms = atoms
-        pns = ns
-        daje_ns_od_tj(i, atoms, ns)
+        patoms = atoms[:]
+        pns = ns[:]
+        ns = daje_ns_od_tj(i, atoms, ns)
         # !!! tutaj liczenie tych prawdopodobieńst !!! #
-        atoms = patoms
-        ns = pns
+        entropia = log(prawdopodobienstwo(N, ns))
+        # !!! tutaj liczenie tych prawdopodobieńst !!! #
+        atoms = patoms[:]
+        ns = pns[:]
 
 
 
